@@ -1,14 +1,22 @@
 import React, { Component } from 'react';
 
 import './Main.css';
+
 //form
-import {FaPlus} from 'react-icons/fa';
+import {FaPlus, FaEdit, FaWindowClose} from 'react-icons/fa';
 
 export default class Main extends Component {
 
 
   state = {
-      newTask: '',
+    newTask: '',
+    tasks: [
+      'Fazer café',
+      'Estudar React',
+      'Acessar comunidade Rocketseat',
+      'Ler um livro',
+      'Ir na academia',
+    ],
     }
 
   mudaInput = (e) => {
@@ -16,6 +24,8 @@ export default class Main extends Component {
   }
 
   render() {
+    const { newTask, tasks } = this.state;
+
     return (
       <div className="main">
         <h1>Lista de Tarefas</h1>
@@ -26,6 +36,17 @@ export default class Main extends Component {
             <FaPlus />
           </button>
         </form>
+
+        <ul className='tasks'>
+          {tasks.map(task => (
+            <li key={task}>{task}
+            <div>
+              <FaEdit className='edit' />
+              <FaWindowClose className='delete'/>
+            </div>
+            </li>
+          ))}
+        </ul>
       </div>
     );
   }

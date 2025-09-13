@@ -1,4 +1,4 @@
-.main{
+.main {
   background: #fff;
   padding: 30px;
   margin: 50px auto;
@@ -7,19 +7,19 @@
   box-sizing: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.main h1{
+.main h1 {
   font-size: 20px;
   text-align: center;
   margin-bottom: 20px;
 }
 
-.form{
+.form {
   margin-top: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.form input[type="text"]{
+.form input[type="text"] {
   flex: 1;
   height: 40px;
   padding: 0 15px;
@@ -29,15 +29,48 @@
   min-width: 80%;
 }
 
-.form button[type="submit"]{
+.form button[type="submit"] {
   width: 40px;
   height: 40px;
-  background:#f04c64;
+  background: #f04c64;
   border: 0;
   border-radius: 4px;
   margin-left: 10px;
   color: #fff;
-display: flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.tasks {
+  margin-top: 30px;
+}
+
+.tasks li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  transition: all 600ms;
+}
+
+.tasks li:hover {
+  background: #51c5de;
+}
+
+.tasks li .edit{
+  margin-right: 15px;
+  background-color: #51c5de;
+}
+.tasks li .delete{
+  margin-right: 15px;
+  background-color: #f04c64;
+}
+
+.tasks li:hover .edit, .tasks li:hover .delete{
+  color: #000;
+}
+.tasks li .edit, .tasks li .delete{
+  cursor: pointer;
+  transition: all 600ms;
 }
