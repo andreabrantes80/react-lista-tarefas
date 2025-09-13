@@ -60,11 +60,11 @@
 
 .tasks li .edit{
   margin-right: 15px;
-  background-color: #51c5de;
+  color: #51c5de;
 }
 .tasks li .delete{
   margin-right: 15px;
-  background-color: #f04c64;
+color: #f04c64;
 }
 
 .tasks li:hover .edit, .tasks li:hover .delete{
@@ -73,4 +73,9 @@
 .tasks li .edit, .tasks li .delete{
   cursor: pointer;
   transition: all 600ms;
+}
+
+.tasks li  span{
+  display: flex;
+  align-items: center;
 }

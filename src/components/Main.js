@@ -11,13 +11,25 @@ export default class Main extends Component {
   state = {
     newTask: '',
     tasks: [
-      'Fazer café',
-      'Estudar React',
-      'Acessar comunidade Rocketseat',
-      'Ler um livro',
-      'Ir na academia',
+
     ],
-    }
+  }
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+
+    const {  tasks } = this.state;
+
+    let {newTask} = this.state;
+    newTask = newTask.trim();
+
+    if (tasks.indexOf(newTask) !== -1) return;
+
+    const newTasks = [...tasks];
+
+    this.setState({ tasks: [...newTasks, newTask], newTask: '' });
+
+  }
 
   mudaInput = (e) => {
     this.setState({ newTask: e.target.value });
@@ -30,7 +42,7 @@ export default class Main extends Component {
       <div className="main">
         <h1>Lista de Tarefas</h1>
 
-        <form action='#' className='form'>
+        <form onSubmit={this.handleSubmit}  action='#' className='form'>
           <input type="text" placeholder="Adicione uma tarefa" onChange={this.mudaInput} value={newTask}/>
           <button type="submit">
             <FaPlus />
@@ -40,10 +52,10 @@ export default class Main extends Component {
         <ul className='tasks'>
           {tasks.map(task => (
             <li key={task}>{task}
-            <div>
+            <span>
               <FaEdit className='edit' />
               <FaWindowClose className='delete'/>
-            </div>
+            </span>
             </li>
           ))}
         </ul>
