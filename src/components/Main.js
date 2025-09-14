@@ -5,10 +5,6 @@ import Form from "../components/Form";
 
 import Tarefas from "../components/Tarefas";
 
-
-
-
-
 export default class Main extends Component {
   state = {
     newTask: "",
@@ -22,7 +18,6 @@ export default class Main extends Component {
     if (!tasks) return;
 
     this.setState({ tasks });
-
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -46,26 +41,22 @@ export default class Main extends Component {
     const newTasks = [...tasks];
 
     if (index === -1) {
-
       this.setState({ tasks: [...newTasks, newTask], newTask: "" });
-
     } else {
       newTasks[index] = newTask;
       this.setState({ tasks: [...newTasks], index: -1, newTask: "" });
     }
-
   };
 
   handleEdit = (e, index) => {
     const { tasks } = this.state;
 
     this.setState({ index, newTask: tasks[index] });
-  }
+  };
 
   mudaInput = (e) => {
     this.setState({ newTask: e.target.value });
   };
-
 
   handleDelete = (e, index) => {
     const { tasks } = this.state;
@@ -81,17 +72,16 @@ export default class Main extends Component {
       <div className="main">
         <h1>Lista de Tarefas</h1>
 
-        <Form handleSubmit={this.handleSubmit}
+        <Form
+          handleSubmit={this.handleSubmit}
           mudaInput={this.mudaInput}
           newTask={newTask}
         />
         <Tarefas
-        tasks={tasks}
-        handleEdit={this.handleEdit}
-        handleDelete={this.handleDelete}
-
+          tasks={tasks}
+          handleEdit={this.handleEdit}
+          handleDelete={this.handleDelete}
         />
-
       </div>
     );
   }
