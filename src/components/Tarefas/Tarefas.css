@@ -36,3 +36,13 @@ color: #f04c64;
   display: flex;
   align-items: center;
 }
+.tasks li .task-text {
+  flex: 1; /* ocupa espaço da esquerda */
+  margin-right: 10px;
+}
+
+.tasks li .date {
+  margin-right: 8px; /* novo */
+  font-size: 0.85rem;
+  color: #777;
+}

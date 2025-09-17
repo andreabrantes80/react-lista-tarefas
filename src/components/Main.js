@@ -36,14 +36,25 @@ export default class Main extends Component {
     let { newTask } = this.state;
     newTask = newTask.trim();
 
-    if (tasks.indexOf(newTask) !== -1) return;
+    // if (tasks.indexOf(newTask) !== -1) return;
+
+     if (tasks.some((t) => t.text === newTask)) return;
 
     const newTasks = [...tasks];
 
     if (index === -1) {
-      this.setState({ tasks: [...newTasks, newTask], newTask: "" });
+      //adiciona nova tarefa com hora e data
+      const now = new Date();
+      const formattedDate = now.toLocaleString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const taskObjt = { text: newTask, date: formattedDate };
+
+      this.setState({ tasks: [...newTasks, taskObjt], newTask: "" });
     } else {
-      newTasks[index] = newTask;
+      newTasks[index].text = newTask;
       this.setState({ tasks: [...newTasks], index: -1, newTask: "" });
     }
   };
@@ -51,7 +62,7 @@ export default class Main extends Component {
   handleEdit = (e, index) => {
     const { tasks } = this.state;
 
-    this.setState({ index, newTask: tasks[index] });
+    this.setState({ index, newTask: tasks[index].text });
   };
 
   mudaInput = (e) => {
