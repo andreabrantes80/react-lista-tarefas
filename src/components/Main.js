@@ -8,6 +8,7 @@ import Tarefas from "../components/Tarefas";
 export default class Main extends Component {
   state = {
     newTask: "",
+    alarmTime: "",
     tasks: [],
     index: -1,
   };
@@ -15,9 +16,24 @@ export default class Main extends Component {
   componentDidMount() {
     const tasks = JSON.parse(localStorage.getItem("tasks"));
 
-    if (!tasks) return;
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
 
-    this.setState({ tasks });
+    if (tasks) {
+      // adiciona flag alarmTriggered para tarefas antigas
+      const tasksWithFlag = tasks.map((task) => ({
+        ...task,
+        alarmTriggered: task.alarmTriggered || false,
+      }));
+      this.setState({ tasks: tasksWithFlag });
+    }
+
+    this.alarmeIntervalo = setInterval(this.checkAlarms, 60000); // Verifica a cada minuto
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.alarmeIntervalo);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -28,19 +44,77 @@ export default class Main extends Component {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }
 
+  getCurrentTime = () => {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, "0");
+    const minutes = now.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
+  // ----------------- ALARME -----------------
+  checkAlarms = () => {
+    const now = Date.now();
+
+    this.setState((prevState) => {
+      const updatedTasks = prevState.tasks.map((task) => {
+        if (
+          !task.alarmTriggered &&
+          task.alarmTimestamp &&
+          now >= task.alarmTimestamp
+        ) {
+          this.notifyUser(task);
+          return { ...task, alarmTriggered: true }; // marca como disparado
+        }
+        return task;
+      });
+      return { tasks: updatedTasks };
+    });
+  };
+
+  notifyUser = (task) => {
+    if (Notification.permission === "granted") {
+      new Notification("⏰ Lembrete de Tarefa!", {
+        body: `Está na hora de: ${task.text}`,
+        icon: "/icone.png", // opcional
+      });
+    }
+  };
+
   handleSubmit = (e) => {
     e.preventDefault();
 
-    const { tasks, index } = this.state;
+    const { tasks, index, alarmTime } = this.state;
 
     let { newTask } = this.state;
     newTask = newTask.trim();
 
+    if (!newTask) return;
+
     // if (tasks.indexOf(newTask) !== -1) return;
 
-     if (tasks.some((t) => t.text === newTask)) return;
+    if (tasks.some((t) => t.text === newTask)) return;
 
     const newTasks = [...tasks];
+
+     // Calcula timestamp do alarme
+    let alarmTimestamp = null;
+    if (alarmTime) {
+      const [hours, minutes] = alarmTime.split(":");
+      const now = new Date();
+      let alarmDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        parseInt(hours),
+        parseInt(minutes),
+        0,
+        0
+      );
+      // se horário já passou hoje, agenda para amanhã
+      if (alarmDate < now) alarmDate.setDate(alarmDate.getDate() + 1);
+
+      alarmTimestamp = alarmDate.getTime();
+    }
 
     if (index === -1) {
       //adiciona nova tarefa com hora e data
@@ -50,23 +124,56 @@ export default class Main extends Component {
         minute: "2-digit",
       });
 
-      const taskObjt = { text: newTask, date: formattedDate };
+      const taskObjt = {
+        text: newTask,
+        date: formattedDate,
+        alarmTime: alarmTime || "",
+        alarmTimestamp: alarmTimestamp || null,
+        alarmTriggered: false, // nova tarefa, alarme não disparado
+      };
 
-      this.setState({ tasks: [...newTasks, taskObjt], newTask: "" });
+      this.setState({
+        tasks: [...newTasks, taskObjt],
+        newTask: "",
+        alarmTime: "",
+      });
     } else {
       newTasks[index].text = newTask;
-      this.setState({ tasks: [...newTasks], index: -1, newTask: "" });
+       newTasks[index].alarmTime = alarmTime || "";
+      newTasks[index].alarmTimestamp = alarmTimestamp;
+      newTasks[index].alarmTriggered = false; // reseta ao editar
+      this.setState({
+        tasks: [...newTasks],
+        index: -1,
+        newTask: "",
+        alarmTime: "",
+      });
     }
   };
 
   handleEdit = (e, index) => {
     const { tasks } = this.state;
 
-    this.setState({ index, newTask: tasks[index].text });
+     let alarmTimeStr = tasks[index].alarmTime || "";;
+     if (tasks[index].alarmTimestamp) {
+       const date = new Date(tasks[index].alarmTimestamp);
+       const h = date.getHours().toString().padStart(2, "0");
+       const m = date.getMinutes().toString().padStart(2, "0");
+       alarmTimeStr = `${h}:${m}`;
+     }
+     this.setState({
+       index,
+       newTask: tasks[index].text,
+       alarmTime: alarmTimeStr,
+     });
   };
 
   mudaInput = (e) => {
     this.setState({ newTask: e.target.value });
+  };
+
+  mudaAlarmTime = (e) => {
+    this.setState({ alarmTime: e.target.value });
   };
 
   handleDelete = (e, index) => {
@@ -77,7 +184,7 @@ export default class Main extends Component {
   };
 
   render() {
-    const { newTask, tasks } = this.state;
+    const { newTask, tasks, alarmTime } = this.state;
 
     return (
       <div className="main">
@@ -87,6 +194,8 @@ export default class Main extends Component {
           handleSubmit={this.handleSubmit}
           mudaInput={this.mudaInput}
           newTask={newTask}
+          alarmTime={alarmTime}
+          mudaAlarmTime={this.mudaAlarmTime}
         />
         <Tarefas
           tasks={tasks}

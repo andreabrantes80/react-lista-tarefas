@@ -46,3 +46,9 @@ color: #f04c64;
   font-size: 0.85rem;
   color: #777;
 }
+
+.tasks li .alarm {
+  margin-right: 8px;
+  font-size: 0.85rem;
+  color: #777;
+}

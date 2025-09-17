@@ -3,15 +3,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px; /* espaço entre os inputs e botão */
+  flex-wrap: wrap; /* evita quebra de layout em telas pequenas */
 }
-.form input[type="text"] {
-  flex: 1;
+
+.form input[type="text"],
+.form input[type="time"] {
   height: 40px;
   padding: 0 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 20px;
-  min-width: 80%;
+  font-size: 16px;
+}
+
+.form input[type="text"] {
+  flex: 1 1 300px; /* ocupa o máximo possível, mas não menor que 300px */
+  min-width: 200px;
+}
+
+.form input[type="time"] {
+  width: 150px; /* largura fixa para o horário */
+  min-width: 120px;
 }
 
 .form button[type="submit"] {
@@ -20,9 +32,14 @@
   background: #f04c64;
   border: 0;
   border-radius: 4px;
-  margin-left: 10px;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0; /* evita que o botão encolha */
+}
+
+.form button[type="submit"]:hover {
+  background: #e03b57;
 }
