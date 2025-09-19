@@ -31,3 +31,25 @@
   color: #0056b3;        /* tom mais escuro no hover */
 }
 
+.notifications {
+  margin-top: 30px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+.notifications ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.notifications li {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.notifications li:last-child {
+  border-bottom: none;
+}
+

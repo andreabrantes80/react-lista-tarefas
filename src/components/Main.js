@@ -11,7 +11,9 @@ export default class Main extends Component {
     alarmTime: "",
     tasks: [],
     index: -1,
+    notifications: [],
   };
+  receiveIds = new Set();
 
   componentDidMount() {
     const tasks = JSON.parse(localStorage.getItem("tasks"));
@@ -34,7 +36,7 @@ export default class Main extends Component {
     // Registro do Service Worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("/ntfy-sw.js")
+        .register(`${process.env.PUBLIC_URL}/ntfy-sw.js`)
         .then((reg) => console.log("✅ SW registrado:", reg))
         .catch((err) => console.error("❌ Erro no SW:", err));
     }
@@ -112,17 +114,42 @@ export default class Main extends Component {
 
   // ----------------- SSE NTFY -----------------
   subscribeToNtfy = () => {
+
     this.eventSource = new EventSource("https://ntfy.sh/alarme-tarefas/sse");
 
     this.eventSource.onmessage = (event) => {
-      const msg = event.data;
-      console.log("📩 Mensagem recebida do ntfy:", msg);
+      try {
+        const msg = JSON.parse(event.data);
 
-      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: "NTFY_MESSAGE",
-          body: msg,
-        });
+        if(this.receiveIds.has(msg.id)) return;
+        this.receiveIds.add(msg.id);
+
+        console.log("Mensagem ntfy recebida:", msg);
+
+
+        // Adiciona no estado para renderizar no app
+        this.setState((prevState) => ({
+          notifications: [
+            ...prevState.notifications,
+            { id: msg.id, title: msg.title, message: msg.message },
+          ],
+        }));
+
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: "NTFY_MESSAGE",
+            body: msg.id,
+          });
+        }
+        // Notificação do navegador
+        if (Notification.permission === "granted") {
+          new Notification(msg.title || "📌 Notificação ntfy", {
+            body: msg.message,
+            icon: "/icone.png",
+          });
+        }
+      } catch (err) {
+        console.error("Erro ao processar mensagem ntfy:", err);
       }
     };
 
@@ -236,7 +263,7 @@ export default class Main extends Component {
   };
 
   render() {
-    const { newTask, tasks, alarmTime } = this.state;
+    const { newTask, tasks, alarmTime, notifications } = this.state;
 
     return (
       <div className="main">
@@ -259,6 +286,21 @@ export default class Main extends Component {
         <p style={{ textAlign: "center", marginTop: "20px", color: "#555" }}>
           Notificações automáticas ativadas via ntfy.sh
         </p>
+        {/* Renderiza notificações recebidas */}
+        <div className="notifications">
+          <h2>Notificações</h2>
+          {this.state.notifications.length === 0 ? (
+            <p>Nenhuma notificação recebida ainda.</p>
+          ) : (
+            <ul>
+              {this.state.notifications.map((n) => (
+                <li key={n.id}>
+                  <strong>{n.title}</strong>: {n.message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     );
   }
