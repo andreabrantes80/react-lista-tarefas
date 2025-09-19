@@ -112,7 +112,7 @@ export default class Main extends Component {
 
   // ----------------- SSE NTFY -----------------
   subscribeToNtfy = () => {
-    this.eventSource = new EventSource("https://ntfy.sh/alarme-tarefas/stream");
+    this.eventSource = new EventSource("https://ntfy.sh/alarme-tarefas/sse");
 
     this.eventSource.onmessage = (event) => {
       const msg = event.data;
