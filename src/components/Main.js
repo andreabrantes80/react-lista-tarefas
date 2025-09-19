@@ -30,10 +30,22 @@ export default class Main extends Component {
     }
 
     this.alarmeIntervalo = setInterval(this.checkAlarms, 60000); // Verifica a cada minuto
+
+    // Registro do Service Worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/ntfy-sw.js")
+        .then((reg) => console.log("✅ SW registrado:", reg))
+        .catch((err) => console.error("❌ Erro no SW:", err));
+    }
+
+    // Inscrever SSE no tópico ntfy automaticamente
+    this.subscribeToNtfy();
   }
 
   componentWillUnmount() {
     clearInterval(this.alarmeIntervalo);
+    if (this.eventSource) this.eventSource.close();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -66,7 +78,6 @@ export default class Main extends Component {
           this.notifyUser(task);
           this.sendNtfyNotification(task);
 
-
           return { ...task, alarmTriggered: true }; // marca como disparado
         }
         return task;
@@ -97,6 +108,28 @@ export default class Main extends Component {
     } catch (error) {
       console.error("Erro ao enviar notificação ntfy:", error);
     }
+  };
+
+  // ----------------- SSE NTFY -----------------
+  subscribeToNtfy = () => {
+    this.eventSource = new EventSource("https://ntfy.sh/alarme-tarefas/stream");
+
+    this.eventSource.onmessage = (event) => {
+      const msg = event.data;
+      console.log("📩 Mensagem recebida do ntfy:", msg);
+
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: "NTFY_MESSAGE",
+          body: msg,
+        });
+      }
+    };
+
+    this.eventSource.onerror = (err) => {
+      console.error("Erro no SSE do ntfy:", err);
+      this.eventSource.close();
+    };
   };
 
   handleSubmit = (e) => {
@@ -222,16 +255,10 @@ export default class Main extends Component {
           handleDelete={this.handleDelete}
         />
 
-        {/* Link para ativar notificações push via ntfy */}
-        <div className="subscribe">
-          <a
-            href="https://ntfy.sh/alarme-tarefas"
-            // target="_blank"
-            rel="noopener noreferrer"
-          >
-            📲    Ativar notificações
-          </a>
-        </div>
+        {/* Mensagem opcional explicando notificações */}
+        <p style={{ textAlign: "center", marginTop: "20px", color: "#555" }}>
+          Notificações automáticas ativadas via ntfy.sh
+        </p>
       </div>
     );
   }
