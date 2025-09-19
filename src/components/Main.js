@@ -226,7 +226,7 @@ export default class Main extends Component {
         <div className="subscribe">
           <a
             href="https://ntfy.sh/alarme-tarefas"
-            target="_blank"
+            // target="_blank"
             rel="noopener noreferrer"
           >
             📲    Ativar notificações
