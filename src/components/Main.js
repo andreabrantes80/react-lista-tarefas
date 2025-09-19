@@ -53,6 +53,7 @@ export default class Main extends Component {
 
   // ----------------- ALARME -----------------
   checkAlarms = () => {
+    console.log("Verificando alarmes");
     const now = Date.now();
 
     this.setState((prevState) => {
@@ -63,6 +64,9 @@ export default class Main extends Component {
           now >= task.alarmTimestamp
         ) {
           this.notifyUser(task);
+          this.sendNtfyNotification(task);
+
+
           return { ...task, alarmTriggered: true }; // marca como disparado
         }
         return task;
@@ -77,6 +81,21 @@ export default class Main extends Component {
         body: `Está na hora de: ${task.text}`,
         icon: "/icone.png", // opcional
       });
+    }
+  };
+
+  sendNtfyNotification = async (task) => {
+    try {
+      await fetch("https://ntfy.sh/alarme-tarefas", {
+        method: "POST",
+        body: `⏰ Está na hora de: ${task.text}`,
+        headers: {
+          Title: "Lembrete de Tarefa",
+          Priority: "high",
+        },
+      });
+    } catch (error) {
+      console.error("Erro ao enviar notificação ntfy:", error);
     }
   };
 
@@ -96,7 +115,7 @@ export default class Main extends Component {
 
     const newTasks = [...tasks];
 
-     // Calcula timestamp do alarme
+    // Calcula timestamp do alarme
     let alarmTimestamp = null;
     if (alarmTime) {
       const [hours, minutes] = alarmTime.split(":");
@@ -139,7 +158,7 @@ export default class Main extends Component {
       });
     } else {
       newTasks[index].text = newTask;
-       newTasks[index].alarmTime = alarmTime || "";
+      newTasks[index].alarmTime = alarmTime || "";
       newTasks[index].alarmTimestamp = alarmTimestamp;
       newTasks[index].alarmTriggered = false; // reseta ao editar
       this.setState({
@@ -154,18 +173,18 @@ export default class Main extends Component {
   handleEdit = (e, index) => {
     const { tasks } = this.state;
 
-     let alarmTimeStr = tasks[index].alarmTime || "";;
-     if (tasks[index].alarmTimestamp) {
-       const date = new Date(tasks[index].alarmTimestamp);
-       const h = date.getHours().toString().padStart(2, "0");
-       const m = date.getMinutes().toString().padStart(2, "0");
-       alarmTimeStr = `${h}:${m}`;
-     }
-     this.setState({
-       index,
-       newTask: tasks[index].text,
-       alarmTime: alarmTimeStr,
-     });
+    let alarmTimeStr = tasks[index].alarmTime || "";
+    if (tasks[index].alarmTimestamp) {
+      const date = new Date(tasks[index].alarmTimestamp);
+      const h = date.getHours().toString().padStart(2, "0");
+      const m = date.getMinutes().toString().padStart(2, "0");
+      alarmTimeStr = `${h}:${m}`;
+    }
+    this.setState({
+      index,
+      newTask: tasks[index].text,
+      alarmTime: alarmTimeStr,
+    });
   };
 
   mudaInput = (e) => {
@@ -202,6 +221,17 @@ export default class Main extends Component {
           handleEdit={this.handleEdit}
           handleDelete={this.handleDelete}
         />
+
+        {/* Link para ativar notificações push via ntfy */}
+        <div className="subscribe">
+          <a
+            href="https://ntfy.sh/alarme-tarefas"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            📲    Ativar notificações
+          </a>
+        </div>
       </div>
     );
   }

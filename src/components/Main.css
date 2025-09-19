@@ -4,7 +4,7 @@
   margin: 50px auto;
   max-width: 500px;
   border-radius: 4px;
-  box-sizing: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .main h1 {
@@ -13,4 +13,21 @@
   margin-bottom: 20px;
 }
 
+/* Centralizar o link */
+.subscribe {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Estilo do link */
+.subscribe a {
+  text-decoration: none; /* remove sublinhado */
+  color: #007bff;        /* azul padrão */
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.subscribe a:hover {
+  color: #0056b3;        /* tom mais escuro no hover */
+}
 
