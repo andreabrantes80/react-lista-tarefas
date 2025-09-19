@@ -130,15 +130,15 @@ export default class Main extends Component {
         // Adiciona no estado para renderizar no app
         this.setState((prevState) => ({
           notifications: [
-            ...prevState.notifications,
             { id: msg.id, title: msg.title, message: msg.message },
+            ...prevState.notifications,
           ],
         }));
 
         if (navigator.serviceWorker && navigator.serviceWorker.controller) {
           navigator.serviceWorker.controller.postMessage({
             type: "NTFY_MESSAGE",
-            body: msg.id,
+            body: msg.message,
           });
         }
         // Notificação do navegador
