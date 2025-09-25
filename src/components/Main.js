@@ -2,6 +2,7 @@ import React, { Component } from "react";
 
 import "./Main.css";
 import Form from "../components/Form";
+import ably from "../utils/ablyClient";
 
 import Tarefas from "../components/Tarefas";
 
@@ -14,6 +15,7 @@ export default class Main extends Component {
     notifications: [],
   };
   receiveIds = new Set();
+  alreadySubscribed = false;
 
   componentDidMount() {
     const tasks = JSON.parse(localStorage.getItem("tasks"));
@@ -42,7 +44,7 @@ export default class Main extends Component {
     }
 
     // Inscrever SSE no tópico ntfy automaticamente
-    this.subscribeToNtfy();
+    this.subscribeToAbly();
   }
 
   componentWillUnmount() {
@@ -77,8 +79,7 @@ export default class Main extends Component {
           task.alarmTimestamp &&
           now >= task.alarmTimestamp
         ) {
-          this.notifyUser(task);
-          this.sendNtfyNotification(task);
+          this.sendAblyNotification(task);
 
           return { ...task, alarmTriggered: true }; // marca como disparado
         }
@@ -97,66 +98,61 @@ export default class Main extends Component {
     }
   };
 
-  sendNtfyNotification = async (task) => {
+  sendAblyNotification = async (task) => {
     try {
-      await fetch("https://ntfy.sh/alarme-tarefas", {
-        method: "POST",
-        body: `⏰ Está na hora de: ${task.text}`,
-        headers: {
-          Title: "Lembrete de Tarefa",
-          Priority: "high",
-        },
+      const channel = ably.channels.get("alarme-tarefas");
+      await channel.publish("lembrete", {
+        title: "Lembrete de Tarefa",
+        message: `⏰ Está na hora de: ${task.text}`,
       });
     } catch (error) {
-      console.error("Erro ao enviar notificação ntfy:", error);
+      console.error("Erro ao enviar notificação Ably:", error);
     }
   };
 
   // ----------------- SSE NTFY -----------------
-  subscribeToNtfy = () => {
+  subscribeToAbly = () => {
+    if (this.alreadySubscribed) return;
+    this.alreadySubscribed = true;
 
-    this.eventSource = new EventSource("https://ntfy.sh/alarme-tarefas/sse");
+    const channel = ably.channels.get("alarme-tarefas");
 
-    this.eventSource.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-
-        if(this.receiveIds.has(msg.id)) return;
-        this.receiveIds.add(msg.id);
-
-        console.log("Mensagem ntfy recebida:", msg);
-
-
-        // Adiciona no estado para renderizar no app
-        this.setState((prevState) => ({
-          notifications: [
-            { id: msg.id, title: msg.title, message: msg.message },
-            ...prevState.notifications,
-          ],
-        }));
-
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: "NTFY_MESSAGE",
-            body: msg.message,
-          });
-        }
-        // Notificação do navegador
-        if (Notification.permission === "granted") {
-          new Notification(msg.title || "📌 Notificação ntfy", {
-            body: msg.message,
-            icon: "/icone.png",
-          });
-        }
-      } catch (err) {
-        console.error("Erro ao processar mensagem ntfy:", err);
+    channel.subscribe("lembrete", (msg) => {
+      if (!msg || !msg.data) {
+        console.warn("Mensagem Ably inválida ou sem dados:", msg);
+        return;
       }
-    };
 
-    this.eventSource.onerror = (err) => {
-      console.error("Erro no SSE do ntfy:", err);
-      this.eventSource.close();
-    };
+      const id = msg.data.message;
+      if (this.receiveIds.has(id)) return;
+      this.receiveIds.add(id);
+
+      this.setState((prevState) => ({
+        notifications: [
+          {
+            id,
+            title: msg.data.title,
+            message: msg.data.message,
+          },
+          ...prevState.notifications,
+        ],
+      }));
+
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: "ABLY_MESSAGE",
+          body: msg.data.message,
+        });
+      }
+
+      if (Notification.permission === "granted") {
+        new Notification(msg.data.title || "📌 Notificação Ably", {
+          body: msg.data.message,
+          icon: "/icone.png",
+        });
+      }
+
+    });
   };
 
   handleSubmit = (e) => {
