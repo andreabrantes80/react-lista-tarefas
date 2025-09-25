@@ -47,3 +47,10 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+
+/*@license Copyright 2015-2022 Ably Real-time Ltd (ably.com)
+
+Ably JavaScript Library v2.13.0
+https://github.com/ably/ably-js
+
+Released under the Apache Licence v2.0*/
