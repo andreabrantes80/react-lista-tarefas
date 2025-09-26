@@ -17,6 +17,13 @@ export default class Main extends Component {
   receiveIds = new Set();
   alreadySubscribed = false;
 
+  playAlarmSound = () => {
+    const audio = new Audio(`${process.env.PUBLIC_URL}/feel-good-pop-music.mp3`);
+    audio.play().catch((err) => {
+      console.warn("Falha ao tocar som:", err);
+    });
+  };
+
   componentDidMount() {
     const tasks = JSON.parse(localStorage.getItem("tasks"));
 
@@ -80,6 +87,7 @@ export default class Main extends Component {
           now >= task.alarmTimestamp
         ) {
           this.sendAblyNotification(task);
+          this.playAlarmSound();
 
           return { ...task, alarmTriggered: true }; // marca como disparado
         }
@@ -151,7 +159,6 @@ export default class Main extends Component {
           icon: "/icone.png",
         });
       }
-
     });
   };
 
