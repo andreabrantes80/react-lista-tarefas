@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/react-lista-tarefas/static/css/main.bd0ae678.css",
-    "main.js": "/react-lista-tarefas/static/js/main.25905a39.js",
+    "main.js": "/react-lista-tarefas/static/js/main.c26650d3.js",
     "index.html": "/react-lista-tarefas/index.html",
     "main.bd0ae678.css.map": "/react-lista-tarefas/static/css/main.bd0ae678.css.map",
-    "main.25905a39.js.map": "/react-lista-tarefas/static/js/main.25905a39.js.map"
+    "main.c26650d3.js.map": "/react-lista-tarefas/static/js/main.c26650d3.js.map"
   },
   "entrypoints": [
     "static/css/main.bd0ae678.css",
-    "static/js/main.25905a39.js"
+    "static/js/main.c26650d3.js"
   ]
 }
